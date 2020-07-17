@@ -157,6 +157,7 @@ map_and_data <- inner_join(mapVA, acs_Page_area, by = "GEOID")
 college_university_data <- read.csv("C:/Users/Admin/Documents/DSPG/Page/Project_Page_County/data/Colleges_and_Universities.csv")
 small_business_data <- read.csv("C:/Users/Admin/Documents/DSPG/Page/Project_Page_County/data/Small_Business_Development_Centers.csv")
 workforce_dev_center_data <- read.csv("C:/Users/Admin/Documents/DSPG/Page/Project_Page_County/data/Workforce_Development_Centers.csv")
+virginia_business_data <- read.csv("C:/Users/Admin/Documents/DSPG/Page/Project_Page_County/data/Virginia_Business_Data.csv")
 
 college_university_data_filtered <- college_university_data %>%
   filter(STATE ==  "VA") %>%
@@ -188,8 +189,59 @@ workforce_dev_center_data <- workforce_dev_center_data %>%
   
 
 
-   # c("Harrisonburg", "Page", "Rockingham", "Greene",
-                    # "Madison", "Rappahannock", "Warren", "Shenandoah"))
+virginia_services_data <- virginia_business_data 
+ambulance_services_data <- virginia_services_data %>%
+  filter(virginia_services_data$County.Ind.City %in% c("Harrisonburg City", "Warren",
+                                       "Rockingham", "Shenandoah", "Page",
+                                       "Greene", "Rappahannock", "Madison"))
+
+ambulance_services_data <- ambulance_services_data %>%
+  filter(ambulance_services_data$X6.Digit.Title == "Ambulance Services")
+
+correctional_institutions <- virginia_services_data %>%
+  filter(virginia_services_data$X6.Digit.Title == "	Correctional Institutions")
+
+
+farms_data <- virginia_services_data %>%
+  filter(virginia_services_data$Business.Description == "Farms")
+
+# Filtering Virginia Business Data (Large DataSet)
+virginia_business_data_filtered <- virginia_business_data %>%
+  filter(X2.Digit.Title =="Health Care and Social Assistance") %>%
+  filter(virginia_business_data_filtered$County.Ind.City %in% c("Harrisonburg City", "Warren",
+                                                                "Rockingham", "Shenandoah", "Page",
+                                                                "Greene", "Rappahannock", "Madison"))
+
+  # unique(virginia_business_data_filtered$Business.Description)
+
+  virginia_business_data_filtered <- virginia_business_data_filtered %>%
+    filter(Business.Description %in% c("Crisis Intervention Service", "Hospitals",
+                                       "Preventive Medicine", "Wellness Programs",
+                                       "Physicians & Surgeons-Emergency Service",
+                                       "Health Care Facilities", "Emergency Medical & Surgical Service",
+                                       "Social Workers-Clinical", "Rehabilitation Services",
+                                       "Social Service & Welfare Organizations",
+                                       "Counselors", "Counseling Services",
+                                       "Counselors-Licensed Professional", "Medical Centers",
+                                       "Mental Health Services", "Emergency Minor Medical Facilities/Svcs",
+                                       "Ambulance Service", "Integrated Medicine",
+                                       "Clinics", "Health Services", "Nurses & Nurses' Registires",
+                                       "Nurses-Practitioners"))
+
+
+
+virginia_business_data_filtered <- subset(virginia_business_data_filtered, 
+                                          X3.Digit.Title != "Ambulatory Health Care Services")
+virginia_business_data_filtered <- subset(virginia_business_data_filtered, 
+                                          X3.Digit.Title != "Nursing and Residential Care Facilities")
+virginia_business_data_filtered <- subset(virginia_business_data_filtered, 
+                                          X4.Digit.Title != "Individual and Family Services")
+virginia_business_data_filtered <- subset(virginia_business_data_filtered, 
+                                          X4.Digit.Title != "Vocational Rehabilitation Services")
+
+unique(virginia_business_data_filtered$X4.Digit.Title)
+unique(virginia_business_data_filtered$County.Ind.City)
+
 
 
 # Get VA County Outlines
@@ -234,43 +286,66 @@ ggplot(map_and_data) +
   geom_sf(aes(fill=Total_Population)) +
   geom_sf(data=va_sf, fill="transparent", color="black", size=.5) +
   geom_sf(data=page_outline, fill="transparent", color="red", size=1) +
-  theme(legend.title = element_blank()) +
-  geom_point(data=college_university_data_filtered, y=college_university_data_filtered$LATITUDE,
-             x=college_university_data_filtered$LONGITUDE, colour = "red", size=2) +
-  scale_fill_continuous() + theme_bw() +
-  geom_point(data=small_business_data, x=small_business_data$X, y=small_business_data$Y, 
-             colour = "orange", size=2)+
-  geom_point(data=workforce_dev_center_data, x=workforce_dev_center_data$X, y=workforce_dev_center_data$Y, 
-             colour = "pink", size=2)+
-  scale_fill_viridis_c() + scale_color_viridis_c()
+  scale_fill_viridis_c(labels = comma) + labs(fill = "") +
+  
+  geom_point(data=virginia_business_data_filtered, aes(x=Longitude,
+                                                       y=Latitude, colour="Hospitals & Clinics"), size=1.5) +
+  geom_point(data=college_university_data_filtered, aes(y=LATITUDE,
+                                                        x=LONGITUDE, colour = "Colleges & Universities"), size=1.5) +
+  geom_point(data=small_business_data, aes(x=X, y=Y, 
+                                           colour = "Small Business"), size=1.5)+
+  geom_point(data=workforce_dev_center_data, aes(x=X, y=Y, 
+                                                 colour = "Workforce Development"), size=1.5)+
+  scale_colour_manual("" ,values= c("Colleges & Universities" = "black", 
+                                    "Small Business" = "red", 
+                                    "Workforce Development" = "Orange",
+                                    "Hospitals & Clinics" = "purple")) + theme_bw() +
+  labs(subtitle = "Total Population by Census Tract") +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank()) 
+
+
+# tiff("test2.tiff", units="in", width=10, height=5, res=300)
+
+# dev.off()
 
 
 # Median Income Map
-
-
 ggplot(map_and_data) +
   geom_sf(aes(fill=Median_Income)) +
   geom_sf(data=va_sf, fill="transparent", color="black", size=.5) +
   geom_sf(data=page_outline, fill="transparent", color="red", size=1) +
-  theme(legend.title = element_blank()) +
-  geom_point(data=college_university_data_filtered, y=college_university_data_filtered$LATITUDE,
-             x=college_university_data_filtered$LONGITUDE, colour = "red", size=2) +
-  scale_fill_continuous() + theme_bw() +
-  geom_point(data=small_business_data, x=small_business_data$X, y=small_business_data$Y, 
-             colour = "orange", size=2)+
-  geom_point(data=workforce_dev_center_data, x=workforce_dev_center_data$X, y=workforce_dev_center_data$Y, 
-             colour = "pink", size=2)+
-  scale_fill_viridis_c() + scale_color_viridis_c()
+  scale_fill_viridis_c(labels = comma) + labs(fill = "") +
+  
+  geom_point(data=virginia_business_data_filtered, aes(x=Longitude,
+                                                       y=Latitude, colour="Hospitals & Clinics"), size=1.5) +
+  geom_point(data=college_university_data_filtered, aes(y=LATITUDE,
+                                                        x=LONGITUDE, colour = "Colleges & Universities"), size=1.5) +
+  geom_point(data=small_business_data, aes(x=X, y=Y, 
+                                           colour = "Small Business"), size=1.5)+
+  geom_point(data=workforce_dev_center_data, aes(x=X, y=Y, 
+                                                 colour = "Workforce Dev"), size=1.5)+
+  scale_colour_manual("" ,values= c("Colleges & Universities" = "black", 
+                                    "Small Business" = "red", 
+                                    "Workforce Dev" = "White",
+                                    "Hospitals & Clinics" = "purple")) + theme_bw() +
+  labs(title= "Page County", subtitle = "Median Income by Census Tract") +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank()) 
 
-
+  
+  
 
 
 # Page County Only
-map_and_data_Page <- inner_join(mapVA, acs_Page, by = "GEOID")
 
- ggplot(map_and_data_Page) +
-  geom_sf(aes(fill=Total_Population)) +
-   geom_sf(data=va_sf, fill="transparent", color="black", size=.5)
+# map_and_data_Page <- inner_join(mapVA, acs_Page, by = "GEOID")
+# 
+#  ggplot(map_and_data_Page) +
+#   geom_sf(aes(fill=Total_Population)) +
+#    geom_sf(data=va_sf, fill="transparent", color="black", size=.5)
 # # scale_fill_viridis_c() + scale_color_viridis_c()
 
   
