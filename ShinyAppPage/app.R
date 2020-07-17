@@ -23,10 +23,20 @@ gov_all <-
 
 
 sidebar <- dashboardSidebar(
-    selectInput("select_var", "Type Funding", choices = c("All"="all",
+    selectInput("select_var", "Funding Type", choices = c("All"="all",
                                                          "Grants"="grants"),
                 selected = "grants"
-                )
+                ),
+    selectInput("level", "Eligibility", choices = c("County governments" ="county",
+                                               "Small Business"="business",
+                                               "Nonprofits"="nonprofits"),
+                selected = "posted"
+    ),
+    selectInput("sort", "Sort by", choices = c("Agency" ="agency",
+                                               "Status"="status"),
+                selected = "posted"
+    )
+    
 )
 
 header <- dashboardHeader(title = "Page County Dashboard")
