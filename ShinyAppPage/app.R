@@ -3,6 +3,7 @@ library(shinydashboard)
 library(ggplot2)
 library(DT)
 library(dplyr)
+library(networkD3)
 
 setwd("C:/Users/Admin/Documents/DSPG/Page/Project_Page_County")
 
@@ -22,18 +23,26 @@ gov_all <-
 
 
 sidebar <- dashboardSidebar(
-    # selectInput(
-    #     "list_type",
-    #     "Select",
-    #     choices = c("All", "Grants"),
-    #     selected = "All"
-    # )
+    selectInput("select_var", "Type Funding", choices = c("All"="all",
+                                                         "Grants"="grants"),
+                selected = "grants"
+                )
 )
 
 header <- dashboardHeader(title = "Page County Dashboard")
 
 body <- dashboardBody(
-    DTOutput("mytable1")
+    mainPanel(
+        conditionalPanel(
+            condition = "input.select_var == 'all'",
+            DTOutput("mytable1")
+        ),
+        conditionalPanel(
+            condition = "input.select_var == 'grants'",
+            DTOutput('mytable2')
+        )
+    )
+    # DTOutput("mytable1")
 )
 
 ui <- dashboardPage(header,
@@ -51,13 +60,14 @@ server <- function(input, output, session) {
     
     # sorted columns are colored now because CSS are attached to them
     output$mytable2 <- DT::renderDataTable({
-        DT::datatable(gov_grants_only, rownames = F)
+        show_vars <- c("OPPORTUNITY.NUMBER", "AGENCY.CODE")
+        DT::datatable(gov_grants_only[, show_vars, drop = FALSE],
+                      rownames = F,
+                      colnames = c("Name", "Agency"),
+                      class = "cell-border stripe")
     })
     
-    # customize the length drop-down menu; display 5 rows per page by default
-    # output$mytable3 <- DT::renderDataTable({
-    # DT::datatable(iris, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
-    # })
+    
 }
 
 shinyApp(ui, server)
