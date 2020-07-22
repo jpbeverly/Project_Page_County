@@ -10,7 +10,7 @@ Why is recidivism in Page County so high? What resources are available in Page C
   - Physical and Mental Health (20 mins) (Hospitals, clinics, rehab, counseling centers etc) 
   - Education (20 mins) (Community College, Training Center etc) 
   
-## - [ ] TODOs (this week)
+## -[ ] TODOs (this week)
  - Grant List/Database 
  - Recidivism Info 
 
