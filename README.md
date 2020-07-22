@@ -19,7 +19,7 @@ TODOs (this week)
 TODOs(next week)
 -Create vulnerability Score (For each county in Virginia) – Combined composite measure 
 
-*County Spatial Variables  
+* County Spatial Variables  
   Physical and Mental Health locations (15 mile radius) 
     Count in certain radius from population weighted centroid 
     Weighted distance (inverse) to centroid 
@@ -27,8 +27,8 @@ TODOs(next week)
     Count in certain radius 
     Weighted distance 
 
-*ACS poverty 
-*Housing 
+* ACS poverty 
+* Housing 
 * % Black 
 * % Hispanic 
 * Education 
