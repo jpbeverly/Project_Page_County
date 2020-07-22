@@ -5,17 +5,17 @@ Why is recidivism in Page County so high? What resources are available in Page C
 
 
 ## Factors:
- -Incarceration Rates Diagram 
-  -Isochrone Maps:  
-   -Physical and Mental Health (20 mins) (Hospitals, clinics, rehab, counseling centers etc) 
-    -Education (20 mins) (Community College, Training Center etc) 
+- Incarceration Rates Diagram 
+ - Isochrone Maps:  
+  - Physical and Mental Health (20 mins) (Hospitals, clinics, rehab, counseling centers etc) 
+  - Education (20 mins) (Community College, Training Center etc) 
   
-## [ ] TODOs (this week)
- -Grant List/Database 
- -Recidivism Info 
+## - [ ] TODOs (this week)
+ - Grant List/Database 
+ - Recidivism Info 
 
-### [ ] TODOs(next week)
--Create vulnerability Score (For each county in Virginia) – Combined composite measure 
+### - [ ] TODOs(next week)
+- Create vulnerability Score (For each county in Virginia) – Combined composite measure 
 
  * County Spatial Variables  
   Physical and Mental Health locations (15 mile radius) 
@@ -34,4 +34,4 @@ Why is recidivism in Page County so high? What resources are available in Page C
 * Other Crime? 
 * Incarceration Rates? 
 
-### [ ] Output: State Map – Shaded counties to compare Page with other counties in Virginia 
+### - [ ] Output: State Map – Shaded counties to compare Page with other counties in Virginia 
