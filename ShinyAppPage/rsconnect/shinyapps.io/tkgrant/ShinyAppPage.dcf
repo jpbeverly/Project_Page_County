@@ -1,0 +1,12 @@
+name: ShinyAppPage
+title: ShinyAppPage
+username:
+account: tkgrant
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2584240
+bundleId: 3405193
+url: https://tkgrant.shinyapps.io/ShinyAppPage/
+when: 1595017145.64766
+asMultiple: FALSE
+asStatic: FALSE

@@ -9,13 +9,13 @@ setwd("C:/Users/Admin/Documents/DSPG/Page/Project_Page_County")
 
 gov_grants_only <-
     read.csv(
-        "C:/Users/Admin/Documents/DSPG/Page/Project_Page_County/data/Grants/gov_grantsOnly.csv",
+        "/data/Grants/gov_grantsOnly.csv",
         stringsAsFactors = TRUE,
         header = T
     )
 gov_all <-
     read.csv(
-        "C:/Users/Admin/Documents/DSPG/Page/Project_Page_County/data/Grants/gov_all.csv",
+        "/data/Grants/gov_all.csv",
         stringsAsFactors = TRUE,
         header = T
     )
