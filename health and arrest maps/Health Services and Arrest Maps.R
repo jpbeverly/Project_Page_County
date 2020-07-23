@@ -12,10 +12,7 @@ library("sf")
 library("rnaturalearth")
 library("rnaturalearthdata")
 library("ggspatial")
-library("maps")
-library("tools")
 library("ggrepel")
-library("tmaptools")
 library(readxl)
 
 #Industry and Health Services Map Variables
@@ -33,7 +30,6 @@ ggplot(data = world) +
   geom_sf(data = counties)+
   geom_point(data = health_care, aes(x = Longitude, y = Latitude), size = 2, shape = 23, fill = "darkred") +
   coord_sf(xlim = c(-78.7, -78.25), ylim = c(38.4, 38.85), expand = FALSE) + ggtitle("Page County Health Services")
-
 
 
 #Drug Arrest Map variables
