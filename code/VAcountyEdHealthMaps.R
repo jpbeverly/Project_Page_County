@@ -15,7 +15,7 @@ library(tidycensus)
 
 businessVA_data <- read.csv("C:/Users/Admin/Documents/DSPG/Page/Virginia_Business_Data.csv", header=T,stringsAsFactors=F)
 centerPop_county <- read.csv("C:/Users/Admin/Documents/DSPG/Page/Page_County_v2/data/CenPop2010_Mean_CO51.txt", header=T,stringsAsFactors=F)
-map <- st_read("C:/Users/Admin/Documents/DSPG/Page/Page_County_v2/data/VirginiaShapeFiles/countylevel/cb_2018_51_cousub_500k.shp",
+map <- st_read("C:/Users/Admin/Documents/DSPG/Page/Page_County_v2/data/VirginiaShapeFiles/countylevel/SDE_USDC_CENSUS_VA_COUNTY.shp",
                 stringsAsFactors = FALSE)
 
 
@@ -25,7 +25,7 @@ healthVA_data <- businessVA_data %>%
   filter(X4.Digit.Title %notin% c("Offices of Dentists", "Home Health Care Services", "Child Day Care Services",
                                   "Continuing Care Retirement Communities and Assisted Living Facilities for the Elderly",
                                   "Individual and Family Services", "Other Residential Care Facilities",
-                                  "Outpatient Care Centers")) %>%
+                                  "Outpatient Care Centers", "Offices of Other Health Practitioners")) %>%
   filter(X5.Digit.Title %notin% c("Offices of Optometrists", "Offices of Chiropractors", "Community Food Services",
                                   "Community Housing Services", "Emergency and Other Relief Services", 
                                   "Offices of Physical, Occupational and Speech Therapists, and Audiologists",
@@ -33,14 +33,14 @@ healthVA_data <- businessVA_data %>%
   filter(X6.Digit.Title %notin% c("Offices of Podiatrists", "Blood and Organ Banks",
                                   "Specialty (except Psychiatric and Substance Abuse) Hospitals"))
     
-unique(healthVA_data$X6.Digit.Title)
+unique(healthVA_data$X5.Digit.Title)
 
 
 educationVA_data <- businessVA_data%>%
   filter(X2.Digit.Title == "Educational Services") %>%
-  filter(X4.Digit.Title != "Other Schools and Instruction")
+  filter(X4.Digit.Title %notin% c("Other Schools and Instruction", "Elementary and Secondary Schools"))
 
-unique(educationVA_data$X6.Digit.Title)
+unique(educationVA_data$X4.Digit.Title)
 
 
 colnames(centerPop_county)[6] <- "CENTER.LATITUDE"
@@ -123,4 +123,36 @@ CenterPopCounty_map <- inner_join(output, map, by="COUNTYFP")
 
 # Check for values that did not join
 anti_join(output, map, by="COUNTYFP")
+
+ggplot(CenterPopCounty_map) + 
+  geom_sf(aes(fill= HEALTH_INVERSE_DIST_15mile, geometry=geometry)) +
+  # geom_sf(data=va_sf, fill="transparent", color="black", size=.5) +
+  # geom_sf(data=loudoun_outline, fill="transparent", color="red", size=.75) +
+  # ylim(-38.4,-39.3) + xlim(-78.1, -77) +
+  # scale_fill_gradientn(colours=c("red", "yellow", "green", "blue") ,name="Count", trans="log",  
+  #                     breaks = c(0, 1, 3, 5, 10, 30, 100), labels=c(0, 1, 3, 5, 10, 30, 100),
+  #                     na.value="grey") +
+  theme_bw() +theme(legend.title = element_blank()) +
+  scale_fill_gradientn(colours=c("red", "yellow", "green", "blue") ,name="Count", trans="log",  
+                       breaks = c(0, 0.0000001, 0.000001, 0.00001, 0.0001), labels=c(0, 0.0000001, 0.000001, 0.00001, 0.0001),
+                       na.value="grey") +
+  ggtitle("Inverse Distance for Health Facilities within 15 Miles of County Center")
+  # scale_fill_viridis_c() + scale_color_viridis_c()
+  
+  
+ggplot(CenterPopCounty_map) + 
+  geom_sf(aes(fill= ED_INVERSE_DIST_15mile, geometry=geometry)) +
+  # geom_sf(data=va_sf, fill="transparent", color="black", size=.5) +
+  # geom_sf(data=loudoun_outline, fill="transparent", color="red", size=.75) +
+  # ylim(-38.4,-39.3) + xlim(-78.1, -77) +
+  # scale_fill_gradientn(colours=c("red", "yellow", "green", "blue") ,name="Count", trans="log",  
+  #                     breaks = c(0, 1, 3, 5, 10, 30, 100), labels=c(0, 1, 3, 5, 10, 30, 100),
+  #                     na.value="grey") +
+  theme_bw() +theme(legend.title = element_blank()) +
+  scale_fill_gradientn(colours=c("red", "yellow", "green", "blue") ,name="Count", trans="log",  
+                       breaks = c(0, 0.0000001, 0.000001, 0.00001, 0.0001), labels=c(0, 0.0000001, 0.000001, 0.00001, 0.0001),
+                       na.value="grey") +
+  ggtitle("Inverse Distance for Education Facilities within 15 Miles of County Center")
+# scale_fill_viridis_c() + scale_color_viridis_c()
+
 
