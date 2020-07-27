@@ -1,0 +1,311 @@
+---
+title: "Page Code Master"
+author: 'DSPG: VT Page'
+date: "7/27/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries}
+
+# library(tidyverse)
+library (stringr)
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(sf)
+library(scales)
+library(readxl)
+library(ggmap)
+library(leaflet)
+library(rgdal)
+library(rgeos)
+library(geosphere)
+library(pracma)
+library(tidycensus)
+```
+
+## Pull ACS Data
+
+```{r ACS Data Pull}
+
+myACSkey <- ""
+
+# show available variables for ACS survey
+# acs5 <- load_variables(2010, "acs", cache=T)
+
+# Candidate variable tables for describing poverty, educational attainment, race distribution, and housing type
+# B17020 
+# (001-009, 
+# POVERTY STATUS IN THE PAST 12 MONTHS BY AGE, 
+# Universe: Population For Whom Poverty Status Is Determined), 
+# B15003 
+# (001-025, 
+# EDUCATIONAL ATTAINMENT FOR THE POPULATION 25 YEARS AND OVER, 
+# Universe: Population 25 Years And Over), 
+# B02001, B03003, B02009
+# (Race/Demographics)
+# B11001
+# (Housing Type*)
+
+
+# Create a vector of variables to pull
+
+vars<-c(
+  tot_pov_sts_12mths_age_B17020_ = "B17020_001", 
+  tot_income_12mths_blw_pov_lvl_B17020_ = "B17020_002",
+  tot_edu_attain_25yrs_and_up_B15003_= "B15003_001",
+  tot_edu_attain_25yrs_and_up_HS_diploma_B15003_ = "B15003_017",
+  tot_edu_attain_25yrs_and_up_GED_B15003_ = "B15003_018", 
+  tot_edu_attain_25yrs_and_up_somecollege_freshman_B15003_ = "B15003_019", 
+  tot_edu_attain_25yrs_and_up_somecollege_abovefreshman_B15003_ = "B15003_020", 
+  tot_edu_attain_25yrs_and_up_assoc_B15003_= "B15003_021",
+  tot_edu_attain_25yrs_and_up_bach_B15003_= "B15003_022", 
+  tot_edu_attain_25yrs_and_up_masters_B15003_ = "B15003_023", 
+  tot_edu_attain_25yrs_and_up_prof_degree_B15003_ = "B15003_024", 
+  tot_edu_attain_25yrs_and_up_doctorate_B15003_ = "B15003_025",
+  tot_race_known_ = "B02001_001",
+  tot_race_black_african_american_alone_combination_ = "B02009_001",
+  tot_hisp_latino_origin_known_ = "B03003_001",
+  tot_hisp_latino_origin_ = "B03003_003")
+ 
+
+# Pull ACS data for Page only
+acs_VA_CO <- get_acs(variables = vars, 
+                     key = myACSkey,
+                     geography = "county",
+                     state = "VA",
+                     survey = "acs5",
+                     output = "wide",
+                     show_call = T,
+                     geometry = T,
+                     keep_geo_vars = T,
+                     year = 2018)
+
+```
+
+\clearpage
+
+```{r ACS Data Manipulation}
+
+acs_VA_CO$COUNTYFP <- as.numeric(acs_VA_CO$COUNTYFP)
+
+# Create measures based on ACS variables
+
+acs_VA_CO$per_black <- 
+  round((acs_VA_CO$tot_race_black_african_american_alone_combination_E / acs_VA_CO$tot_race_known_E*100),2)
+acs_VA_CO$per_hisp <-
+  round((acs_VA_CO$tot_hisp_latino_origin_E / acs_VA_CO$tot_hisp_latino_origin_known_E*100),2)
+acs_VA_CO$per_poverty <-
+  round((acs_VA_CO$tot_income_12mths_blw_pov_lvl_B17020_E / acs_VA_CO$tot_pov_sts_12mths_age_B17020_E*100),2)
+acs_VA_CO$per_hs_diploma <-
+  round((acs_VA_CO$tot_edu_attain_25yrs_and_up_HS_diploma_B15003_E/acs_VA_CO$tot_edu_attain_25yrs_and_up_B15003_E*100),2)
+acs_VA_CO$perw_adv_degree <- 
+  round(((acs_VA_CO$tot_edu_attain_25yrs_and_up_assoc_B15003_E + 
+            acs_VA_CO$tot_edu_attain_25yrs_and_up_bach_B15003_E +
+            acs_VA_CO$tot_edu_attain_25yrs_and_up_masters_B15003_E +
+            acs_VA_CO$tot_edu_attain_25yrs_and_up_prof_degree_B15003_E +
+            acs_VA_CO$tot_edu_attain_25yrs_and_up_doctorate_B15003_E)/ acs_VA_CO$tot_edu_attain_25yrs_and_up_B15003_E*100),2)
+
+```
+
+\clearpage
+
+```{r Virginia Education & Health Data}
+# Read in data sets
+businessVA_data <- read.csv("C:/Users/Admin/Documents/DSPG/Page/Virginia_Business_Data.csv", header=T,stringsAsFactors=F)
+centerPop_county <- read.csv("C:/Users/Admin/Documents/DSPG/Page/Page_County_v2/data/CenPop2010_Mean_CO51.txt", header=T,stringsAsFactors=F)
+map <- st_read("C:/Users/Admin/Documents/DSPG/Page/Page_County_v2/data/VirginiaShapeFiles/countylevel/SDE_USDC_CENSUS_VA_COUNTY.shp",
+                stringsAsFactors = FALSE)
+
+`%notin%` <- Negate(`%in%`)
+
+healthVA_data <- businessVA_data %>%
+  filter(X2.Digit.Title == "Health Care and Social Assistance") %>%
+  filter(X3.Digit.Title %notin% c("Nursing and Residential Care Facilities")) %>%
+  filter(X4.Digit.Title %notin% c("Offices of Dentists", "Home Health Care Services", "Child Day Care Services",
+                                  "Continuing Care Retirement Communities and Assisted Living Facilities for the Elderly",
+                                  "Individual and Family Services", "Other Residential Care Facilities",
+                                  "Outpatient Care Centers", "Offices of Other Health Practitioners")) %>%
+  filter(X5.Digit.Title %notin% c("Offices of Optometrists", "Offices of Chiropractors", "Community Food Services",
+                                  "Community Housing Services", "Emergency and Other Relief Services", 
+                                  "Offices of Physical, Occupational and Speech Therapists, and Audiologists",
+                                  "Nursing Care Facilities (Skilled Nursing Facilities)", "Medical and Diagnostic Laboratories")) %>%
+  filter(X6.Digit.Title %notin% c("Offices of Podiatrists", "Blood and Organ Banks",
+                                  "Specialty (except Psychiatric and Substance Abuse) Hospitals"))
+    
+
+# unique(healthVA_data$X5.Digit.Title)
+
+educationVA_data <- businessVA_data%>%
+  filter(X2.Digit.Title == "Educational Services") %>%
+  filter(X4.Digit.Title %notin% c("Other Schools and Instruction", "Elementary and Secondary Schools"))
+
+# unique(educationVA_data$X4.Digit.Title)
+
+colnames(centerPop_county)[6] <- "CENTER.LATITUDE"
+colnames(centerPop_county)[7] <- "CENTER.LONGITUDE"
+
+# Remove found duplicate entry
+centerPop_county <- centerPop_county %>%
+  filter(COUNTYFP != 515)
+
+
+# Helper function: calculates distance in meters given 2 sets of coordinates (long, lat). 
+# longitude first, then latitude
+calculate_distance <- function(long1, lat1, long2, lat2){
+  ans <- distm(c(long1, lat1), c(long2, lat2), fun=distHaversine)
+  return(ans)
+}
+
+# Pass in location points dataset. Radius default 15 miles (in meters)
+# uses county geometric center weighted by county population
+loc_within_radius <- function(loc_data1, loc_data2, radius_1 = 24140.2){
+  start.time <- Sys.time()
+  centerData_copy <- centerPop_county
+  
+  centerData_copy$ED_COUNT_15mile <- NA
+  centerData_copy$ED_INVERSE_DIST_15mile <- NA
+  centerData_copy$HEALTH_COUNT_15mile <- NA
+  centerData_copy$HEALTH_INVERSE_DIST_15mile <- NA
+  
+  for(i in 1:nrow(centerData_copy)){
+    count_1 <- 0
+    inverse_dist_1 <- 0
+    count_2 <- 0
+    inverse_dist_2 <- 0
+    centerData_copy$ED_COUNT_15mile[i] <- 0
+    centerData_copy$ED_INVERSE_DIST_15mile[i] <- 0
+    centerData_copy$HEALTH_COUNT_15mile[i] <- 0
+    centerData_copy$HEALTH_INVERSE_DIST_15mile[i] <- 0
+    
+    for(j in 1:nrow(loc_data1)){
+      distance1 <- calculate_distance(centerData_copy$CENTER.LONGITUDE[i], centerData_copy$CENTER.LATITUDE[i],
+                                     loc_data1$Longitude[j], loc_data1$Latitude[j])
+      
+      if(distance1 <= radius_1){
+        count_1 <- count_1 + 1
+        inverse_dist_1 <- (1/distance1) + inverse_dist_1
+      }
+      
+    }
+    centerData_copy$ED_COUNT_15mile[i] <- count_1
+    centerData_copy$ED_INVERSE_DIST_15mile[i] <- inverse_dist_1 / centerData_copy$POPULATION[i]
+    
+    for(k in 1:nrow(loc_data2)){
+      distance2 <- calculate_distance(centerData_copy$CENTER.LONGITUDE[i], centerData_copy$CENTER.LATITUDE[i],
+                                     loc_data2$Longitude[k], loc_data2$Latitude[k])
+      
+      if(distance2 <= radius_1){
+        count_2 <- count_2 + 1
+        inverse_dist_2 <- (1/distance2) + inverse_dist_2
+      }
+      
+    }
+    centerData_copy$HEALTH_COUNT_15mile[i] <- count_2
+    centerData_copy$HEALTH_INVERSE_DIST_15mile[i] <- inverse_dist_2 / centerData_copy$POPULATION[i]
+    
+  }
+  stop.time <- Sys.time()
+  print(loop_time <- stop.time - start.time)
+  return(centerData_copy)
+}
+
+# Run time depends on data filtering
+loc_data_output <- loc_within_radius(educationVA_data, healthVA_data)
+
+map$COUNTYFP <- as.numeric(map$COUNTYFP)
+
+# VA only
+CenterPopCounty_map <- inner_join(loc_data_output, map, by="COUNTYFP")
+
+# Check for values that did not join
+anti_join(loc_data_output, map, by="COUNTYFP")
+```
+
+\clearpage
+
+```{r Arrest Data}
+# Year*
+VAcounty_arrests <- read_xlsx("C:/Users/Admin/Documents/DSPG/Page/Page_County_V2/code/cleaned_arrests.xlsx", sheet = "Sheet1")
+
+# Rename columns
+VAcounty_arrests <- VAcounty_arrests %>%
+  select(County, Percent, GEOID) %>%
+  rename(arrest_perc = Percent,
+         nameCounty = County)
+
+# # Drop "County"
+# VAcounty_arrests <- separate(VAcounty_arrests,nameCounty, into=c("COUNAME", "type"), sep= " ")
+# VAcounty_arrests <- subset(VAcounty_arrests, select= -type)
+
+
+```
+
+
+
+\clearpage
+
+
+```{r Data Merge}
+
+loc_data_output$COUNTYFP <- as.numeric(loc_data_output$COUNTYFP)
+acs_VA_CO$COUNTYFP <- as.numeric(acs_VA_CO$COUNTYFP)
+
+# Merge Education & Health Data to Acs data
+VAcounty_data_merged <- inner_join(loc_data_output, acs_VA_CO, by="COUNTYFP")
+
+
+VAcounty_data_merged$GEOID <- as.numeric(VAcounty_data_merged$GEOID)
+VAcounty_arrests$GEOID <- as.numeric(VAcounty_arrests$GEOID)
+
+
+VAcounty_data_merged <- inner_join(VAcounty_data_merged, VAcounty_arrests, by="GEOID")
+VAcounty_data_merged <- subset(VAcounty_data_merged, select = -c(nameCounty, STATEFP.y, COUNTYNS, 
+                                                                 AFFGEOID, NAME.x, NAME.y, ALAND, 
+                                                                 AWATER, LSAD))
+
+# Drop Geometry column to export csv as correct format
+outputCSV_data_merged <- subset(VAcounty_data_merged, select= -geometry)
+
+ write.csv(outputCSV_data_merged, 
+           "C:/Users/Admin/Documents/DSPG/Page/Page_County_V2/data\\VAcounty_data_master.csv",
+          row.names = FALSE)
+
+```
+
+\clearpage
+
+
+## Maps
+
+
+```{r Virginia county Health Heat Map}
+# Health Map Inverse Distance Radius = 15 miles
+ggplot(CenterPopCounty_map) + 
+  geom_sf(aes(fill= HEALTH_INVERSE_DIST_15mile, geometry=geometry)) +
+  theme_bw() +theme(legend.title = element_blank()) +
+  scale_fill_gradientn(colours=c("red", "yellow", "green", "blue") ,name="Count", trans="log",  
+                       breaks = c(0, 0.0000001, 0.000001, 0.00001, 0.0001), labels=c(0, 0.0000001, 0.000001, 0.00001, 0.0001),
+                       na.value="grey") +
+  ggtitle("Inverse Distance for Health Facilities within 15 Miles of County Center")
+  # scale_fill_viridis_c() + scale_color_viridis_c()
+
+```
+
+\clearpage
+
+```{r Virginia County Education Heat Map}
+# Education Map Inverse Distance Radius = 15 miles
+ggplot(CenterPopCounty_map) + 
+  geom_sf(aes(fill= ED_INVERSE_DIST_15mile, geometry=geometry)) +
+  theme_bw() +theme(legend.title = element_blank()) +
+  scale_fill_gradientn(colours=c("red", "yellow", "green", "blue") ,name="Count", trans="log",  
+                       breaks = c(0, 0.0000001, 0.000001, 0.00001, 0.0001), labels=c(0, 0.0000001, 0.000001, 0.00001, 0.0001),
+                       na.value="grey") +
+  ggtitle("Inverse Distance for Education Facilities within 15 Miles of County Center")
+# scale_fill_viridis_c() + scale_color_viridis_c()
+```
