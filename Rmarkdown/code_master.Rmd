@@ -33,7 +33,7 @@ library(tidycensus)
 ```{r ACS Data Pull}
 
 myACSkey <- ""
-
+register_google(key = "AIzaSyBJD6VBw-QncBMQPrLv8yVE8gheQQc9TFc")
 # show available variables for ACS survey
 # acs5 <- load_variables(2010, "acs", cache=T)
 
@@ -70,10 +70,32 @@ vars<-c(
   tot_race_known_ = "B02001_001",
   tot_race_black_african_american_alone_combination_ = "B02009_001",
   tot_hisp_latino_origin_known_ = "B03003_001",
-  tot_hisp_latino_origin_ = "B03003_003")
+  tot_hisp_latino_origin_ = "B03003_003",
+  tot_employment_civil_labor_ = "B23025_003",
+  tot_employment_civil_labor_employed_ = "B23025_004",
+  tot_employment_civil_labor_unemployed_ = "B23025_005",
+  tot_insurance_known_ = "B27001_001",
+  tot_insurance_under_6yrs_without_ = "B27001_005",
+  tot_insurance_6to18yrs_without_ = "B27001_008",
+  tot_insurance_19to25yrs_without_ = "B27001_011",
+  tot_insurance_26to34yrs_without_ = "B27001_014",
+  tot_insurance_35to44yrs_without_ = "B27001_017",
+  tot_insurance_45to54yrs_without_ = "B27001_020",
+  tot_insurance_55to64yrs_without_ = "B27001_023",
+  tot_insurance_65to74yrs_without_ = "B27001_026",
+  tot_insurance_75yrs_and_up_without_ = "B27001_029",
+  tot_food_assitance_known_ = "B19058_001",
+  tot_food_assitance_with_ = "B19058_002",
+  tot_food_assitance_without_ = "B19058_003",
+  tot_vehicle_known_ = "B08014_001",
+  tot_vehicle_without_ = "B08014_002",
+  tot_gross_rent_known_ = "B25070_001",
+  tot_gross_rent_40_to_49.9per_ = "B25070_009",
+  tot_gross_rent_50per_and_up_ = "B25070_010",
+  tot_gross_rent_not_computed_ = "B25070_011")
  
 
-# Pull ACS data for Page only
+# Pull ACS data for VA Counties
 acs_VA_CO <- get_acs(variables = vars, 
                      key = myACSkey,
                      geography = "county",
@@ -95,20 +117,86 @@ acs_VA_CO$COUNTYFP <- as.numeric(acs_VA_CO$COUNTYFP)
 
 # Create measures based on ACS variables
 
-acs_VA_CO$per_black <- 
-  round((acs_VA_CO$tot_race_black_african_american_alone_combination_E / acs_VA_CO$tot_race_known_E*100),2)
+
+acs_VA_CO$per_black <-
+  round((
+    acs_VA_CO$tot_race_black_african_american_alone_combination_E / acs_VA_CO$tot_race_known_E *
+      100
+  ),
+  2
+  )
 acs_VA_CO$per_hisp <-
-  round((acs_VA_CO$tot_hisp_latino_origin_E / acs_VA_CO$tot_hisp_latino_origin_known_E*100),2)
+  round((
+    acs_VA_CO$tot_hisp_latino_origin_E / acs_VA_CO$tot_hisp_latino_origin_known_E *
+      100
+  ),
+  2
+  )
 acs_VA_CO$per_poverty <-
-  round((acs_VA_CO$tot_income_12mths_blw_pov_lvl_B17020_E / acs_VA_CO$tot_pov_sts_12mths_age_B17020_E*100),2)
-acs_VA_CO$per_hs_diploma <-
-  round((acs_VA_CO$tot_edu_attain_25yrs_and_up_HS_diploma_B15003_E/acs_VA_CO$tot_edu_attain_25yrs_and_up_B15003_E*100),2)
-acs_VA_CO$perw_adv_degree <- 
-  round(((acs_VA_CO$tot_edu_attain_25yrs_and_up_assoc_B15003_E + 
-            acs_VA_CO$tot_edu_attain_25yrs_and_up_bach_B15003_E +
-            acs_VA_CO$tot_edu_attain_25yrs_and_up_masters_B15003_E +
-            acs_VA_CO$tot_edu_attain_25yrs_and_up_prof_degree_B15003_E +
-            acs_VA_CO$tot_edu_attain_25yrs_and_up_doctorate_B15003_E)/ acs_VA_CO$tot_edu_attain_25yrs_and_up_B15003_E*100),2)
+  round((
+    acs_VA_CO$tot_income_12mths_blw_pov_lvl_B17020_E / acs_VA_CO$tot_pov_sts_12mths_age_B17020_E *
+      100
+  ),
+  2
+  )
+acs_VA_CO$per_without_hs_diploma <-
+  round(((
+    acs_VA_CO$tot_edu_attain_25yrs_and_up_B15003_E -
+      (
+        acs_VA_CO$tot_edu_attain_25yrs_and_up_HS_diploma_B15003_E +
+          acs_VA_CO$tot_edu_attain_25yrs_and_up_GED_B15003_E +
+          acs_VA_CO$tot_edu_attain_25yrs_and_up_somecollege_freshman_B15003_E +
+          acs_VA_CO$tot_edu_attain_25yrs_and_up_somecollege_abovefreshman_B15003_E +
+          acs_VA_CO$tot_edu_attain_25yrs_and_up_assoc_B15003_E +
+          acs_VA_CO$tot_edu_attain_25yrs_and_up_bach_B15003_E +
+          acs_VA_CO$tot_edu_attain_25yrs_and_up_masters_B15003_E +
+          acs_VA_CO$tot_edu_attain_25yrs_and_up_prof_degree_B15003_E +
+          acs_VA_CO$tot_edu_attain_25yrs_and_up_doctorate_B15003_E
+      )
+  ) /
+    acs_VA_CO$tot_edu_attain_25yrs_and_up_B15003_E * 100
+  ), 2)
+acs_VA_CO$per_unemployed <-
+  round((
+    acs_VA_CO$tot_employment_civil_labor_unemployed_E / acs_VA_CO$tot_employment_civil_labor_E *
+      100
+  ),
+  2
+  )
+acs_VA_CO$per_with_snap <-
+  round((
+    acs_VA_CO$tot_food_assitance_with_E / acs_VA_CO$tot_food_assitance_known_E *
+      100
+  ),
+  2
+  )
+acs_VA_CO$per_without_vehicle <-
+  round((
+    acs_VA_CO$tot_vehicle_without_E / acs_VA_CO$tot_vehicle_known_E * 100
+  ),
+  2)
+acs_VA_CO$per_without_insurance <-
+  round(((
+    acs_VA_CO$tot_insurance_under_6yrs_without_E +
+      acs_VA_CO$tot_insurance_6to18yrs_without_E +
+      acs_VA_CO$tot_insurance_19to25yrs_without_E +
+      acs_VA_CO$tot_insurance_26to34yrs_without_E +
+      acs_VA_CO$tot_insurance_35to44yrs_without_E +
+      acs_VA_CO$tot_insurance_45to54yrs_without_E +
+      acs_VA_CO$tot_insurance_55to64yrs_without_E +
+      acs_VA_CO$tot_insurance_65to74yrs_without_E +
+      acs_VA_CO$tot_insurance_75yrs_and_up_without_E
+  ) / acs_VA_CO$tot_insurance_known_E * 100
+  ), 2)
+acs_VA_CO$per_gross_rent_40per_and_up <-
+  round(((
+    acs_VA_CO$tot_gross_rent_40_to_49.9per_E + acs_VA_CO$tot_gross_rent_50per_and_up_E
+  ) /
+    (
+      acs_VA_CO$tot_gross_rent_known_E - acs_VA_CO$tot_gross_rent_not_computed_E
+    ) * 100
+  ), 2)
+
 
 ```
 
@@ -193,7 +281,10 @@ loc_within_radius <- function(loc_data1, loc_data2, radius_1 = 24140.2){
       
     }
     centerData_copy$ED_COUNT_15mile[i] <- count_1
-    centerData_copy$ED_INVERSE_DIST_15mile[i] <- inverse_dist_1 / centerData_copy$POPULATION[i]
+     if (centerData_copy$POPULATION[i] == 0) 
+       centerData_copy$ED_INVERSE_DIST_15mile[i] <- NA
+     else
+      centerData_copy$ED_INVERSE_DIST_15mile[i] <- inverse_dist_1 / centerData_copy$POPULATION[i]
     
     for(k in 1:nrow(loc_data2)){
       distance2 <- calculate_distance(centerData_copy$CENTER.LONGITUDE[i], centerData_copy$CENTER.LATITUDE[i],
@@ -206,7 +297,10 @@ loc_within_radius <- function(loc_data1, loc_data2, radius_1 = 24140.2){
       
     }
     centerData_copy$HEALTH_COUNT_15mile[i] <- count_2
-    centerData_copy$HEALTH_INVERSE_DIST_15mile[i] <- inverse_dist_2 / centerData_copy$POPULATION[i]
+    if (centerData_copy$POPULATION[i] == 0)
+      centerData_copy$HEALTH_INVERSE_DIST_15mile[i] <- NA
+    else
+      centerData_copy$HEALTH_INVERSE_DIST_15mile[i] <- inverse_dist_2 / centerData_copy$POPULATION[i]
     
   }
   stop.time <- Sys.time()
@@ -215,7 +309,7 @@ loc_within_radius <- function(loc_data1, loc_data2, radius_1 = 24140.2){
 }
 
 # Run time depends on data filtering
-loc_data_output <- loc_within_radius(educationVA_data, healthVA_data)
+loc_data_output <- loc_within_radius(educationVA_data, healthVA_data, radius_1 = 64373.8)
 
 map$COUNTYFP <- as.numeric(map$COUNTYFP)
 
@@ -235,13 +329,8 @@ VAcounty_arrests <- read_xlsx("C:/Users/Admin/Documents/DSPG/Page/Page_County_V2
 # Rename columns
 VAcounty_arrests <- VAcounty_arrests %>%
   select(County, Percent, GEOID) %>%
-  rename(arrest_perc = Percent,
+  rename(per_substance_arrest = Percent,
          nameCounty = County)
-
-# # Drop "County"
-# VAcounty_arrests <- separate(VAcounty_arrests,nameCounty, into=c("COUNAME", "type"), sep= " ")
-# VAcounty_arrests <- subset(VAcounty_arrests, select= -type)
-
 
 ```
 
@@ -274,38 +363,103 @@ outputCSV_data_merged <- subset(VAcounty_data_merged, select= -geometry)
  write.csv(outputCSV_data_merged, 
            "C:/Users/Admin/Documents/DSPG/Page/Page_County_V2/data\\VAcounty_data_master.csv",
           row.names = FALSE)
-
+ 
 ```
 
 \clearpage
 
 
 ## Maps
+```{r Pull Map Outlines}
+va_sf <- get_acs(
+  geography = "county",
+  state = "VA",
+  variables = "B19058_002",
+  survey = "acs5",
+  key = myACSkey,
+  year = 2018,
+  output = "wide",
+  show_call = T,
+  geometry = T,
+  keep_geo_vars = T
+) %>%
+  select(COUNTYFP, geometry)
 
 
-```{r Virginia county Health Heat Map}
-# Health Map Inverse Distance Radius = 15 miles
-ggplot(CenterPopCounty_map) + 
-  geom_sf(aes(fill= HEALTH_INVERSE_DIST_15mile, geometry=geometry)) +
-  theme_bw() +theme(legend.title = element_blank()) +
-  scale_fill_gradientn(colours=c("red", "yellow", "green", "blue") ,name="Count", trans="log",  
-                       breaks = c(0, 0.0000001, 0.000001, 0.00001, 0.0001), labels=c(0, 0.0000001, 0.000001, 0.00001, 0.0001),
-                       na.value="grey") +
-  ggtitle("Inverse Distance for Health Facilities within 15 Miles of County Center")
-  # scale_fill_viridis_c() + scale_color_viridis_c()
+# Get Loudoun County Outline only
+page_outline <- get_acs(
+  geography = "county",
+  state = "VA",
+  county = c("Page county"),
+  variables = "B19058_002",
+  survey = "acs5",
+  key = myACSkey,
+  year = 2018,
+  output = "wide",
+  show_call = T,
+  geometry = T,
+  keep_geo_vars = T
+) %>%
+  select(COUNTYFP, geometry)
 
+va_basemap <- get_map(location=c(lon = -77.5, lat = 38.8), zoom=6, scale = "auto", source = 'stamen', maptype = "roadmap")
 ```
 
-\clearpage
 
-```{r Virginia County Education Heat Map}
-# Education Map Inverse Distance Radius = 15 miles
+```{r Virginia county Health Heat Map, eval = TRUE, echo=FALSE, message=FALSE, fig.height = 4, fig.width = 7, fig.align = "center"}
+
+mypalette1 <- colorQuantile(palette="OrRd", CenterPopCounty_map$HEALTH_INVERSE_DIST_15mile,n=9)
+# Health Map Inverse Distance Radius = 15 miles
 ggplot(CenterPopCounty_map) + 
-  geom_sf(aes(fill= ED_INVERSE_DIST_15mile, geometry=geometry)) +
-  theme_bw() +theme(legend.title = element_blank()) +
-  scale_fill_gradientn(colours=c("red", "yellow", "green", "blue") ,name="Count", trans="log",  
-                       breaks = c(0, 0.0000001, 0.000001, 0.00001, 0.0001), labels=c(0, 0.0000001, 0.000001, 0.00001, 0.0001),
-                       na.value="grey") +
-  ggtitle("Inverse Distance for Education Facilities within 15 Miles of County Center")
-# scale_fill_viridis_c() + scale_color_viridis_c()
+ geom_sf(data=CenterPopCounty_map ,aes(fill= mypalette1(HEALTH_INVERSE_DIST_15mile), geometry=geometry), inherit.aes = FALSE) +
+  geom_sf(data=va_sf, fill="transparent", color="black", size=.5, inherit.aes = FALSE) +
+  geom_sf(data=page_outline, fill="transparent", color="orange", size=.75, inherit.aes = FALSE) +
+  scale_fill_brewer(name = "Relative Accessibility", palette = "OrRd", labels=c("High","","","","", "","","","Low")) +
+  coord_sf(crs = st_crs(4326)) + theme_bw() +
+  # theme(axis.line=element_blank(),axis.text.x=element_blank(),
+  #       axis.text.y=element_blank(),axis.ticks=element_blank(),
+  #       axis.title.x=element_blank(),
+  #       axis.title.y=element_blank(),legend.position="right",
+  #       panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
+  #       panel.grid.minor=element_blank(),plot.background=element_blank()) +
+  ggtitle("Health Care Facility Access Index (15 Miles)")
+    ```
+
+\clearpage
+```{r Map tmp, eval = TRUE, echo=FALSE, message=FALSE, fig.height = 4, fig.width = 7, fig.align = "center"}
+# Education Map Inverse Distance Radius = 15 miles
+# Get google map background for Virginia
+mypalette2 <- colorQuantile(palette="OrRd", CenterPopCounty_map$ED_INVERSE_DIST_15mile,n=9)
+
+ggmap(va_basemap) +
+  geom_sf(data=CenterPopCounty_map ,aes(fill= mypalette2(ED_INVERSE_DIST_15mile), geometry=geometry), inherit.aes = FALSE) +
+  geom_sf(data=va_sf, fill="transparent", color="black", size=.5, inherit.aes = FALSE) +
+  geom_sf(data=page_outline, fill="transparent", color="orange", size=.75, inherit.aes = FALSE) +
+  scale_fill_brewer(name = "Relative Accessibility", palette = "OrRd", labels=c("High","","","","", "","","","Low")) +
+  coord_sf(crs = st_crs(4326)) +
+  theme(axis.line=element_blank(),axis.text.x=element_blank(),
+        axis.text.y=element_blank(),axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),legend.position="right",
+        panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),plot.background=element_blank()) +
+  ggtitle("Educational Facility Access Index (20 Miles)") +
+  ylim(-36.5,-39.5) + xlim(-84, -75) 
+```
+
+```{r Virginia County Education Heat Map, eval = TRUE, echo=FALSE, message=FALSE, fig.height = 4, fig.width = 7, fig.align = "center"}
+
+ggplot(CenterPopCounty_map) + 
+ geom_sf(data=CenterPopCounty_map ,aes(fill= mypalette2(ED_INVERSE_DIST_15mile), geometry=geometry), inherit.aes = FALSE) +
+  geom_sf(data=va_sf, fill="transparent", color="black", size=.5, inherit.aes = FALSE) +
+  geom_sf(data=page_outline, fill="transparent", color="orange", size=.75, inherit.aes = FALSE) +
+  scale_fill_brewer(name = "Relative Accessibility", palette = "OrRd", labels=c("High","","","","", "","","","Low")) +
+  coord_sf(crs = st_crs(4326)) + theme_bw() +
+  # theme(axis.line=element_blank(),axis.text.x=element_blank(),
+  #       axis.text.y=element_blank(),axis.ticks=element_blank(),
+  #       axis.title.x=element_blank(),
+  #       axis.title.y=element_blank(),legend.position="right",
+  #       panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
+  #       panel.grid.minor=element_blank(),plot.background=element_blank()) +
+  ggtitle("Educational Facility Access Index (15 Miles)")
 ```
