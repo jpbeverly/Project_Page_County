@@ -101,7 +101,41 @@ vars<-c(
   tot_gross_rent_known_ = "B25070_001",
   tot_gross_rent_40_to_49.9per_ = "B25070_009",
   tot_gross_rent_50per_and_up_ = "B25070_010",
-  tot_gross_rent_not_computed_ = "B25070_011")
+  tot_gross_rent_not_computed_ = "B25070_011",
+  tot_speak_spanish = "B06007_008",
+   tot_speak_other_language = "B06007_005",
+   tot_language = "B06007_001",
+  tot_6_17_single_parent = "B05009_031",
+  tot_6_single_parent = "B05009_013",
+  tot_single_parent = "B05009_001",
+  pov_12month_income = "B17001_002",
+  tot_12month_income= "B17001_001",
+  tot_male_17 = "B01001_006",
+  tot_male_14 = "B01001_005",
+  tot_male_9 = "B01001_004",
+  tot_male_5 = "B01001_003",
+  tot_pop = "B01001_001",
+  tot_female_5 = "B01001_027",
+  tot_female_9 = "B01001_028",
+  tot_female_14 = "B01001_029",
+  tot_female_17 = "B01001_030",
+  tot_male_65 = "B01001_020",
+  tot_male_67 = "B01001_021",
+  tot_male_70 = "B01001_022",
+  tot_male_75 = "B01001_023",
+  tot_male_80 = "B01001_024",
+  tot_male_85 = "B01001_025",
+  tot_female_65 = "B01001_044",
+  tot_female_67 = "B01001_045",
+  tot_female_70 = "B01001_046",
+  tot_female_75 = "B01001_047",
+  tot_female_80 = "B01001_048",
+  tot_female_85 = "B01001_049",
+  tot_disability = "B18101_001",
+  tot_dis_pop = "B01003_001",
+  tot_group_quarters18 = "B09001_010",
+  tot_group_quarters = "B26001_001"
+  )
  
 
 # Pull ACS data for VA Counties
@@ -205,7 +239,14 @@ acs_VA_CO$per_gross_rent_40per_and_up <-
       acs_VA_CO$tot_gross_rent_known_E - acs_VA_CO$tot_gross_rent_not_computed_E
     ) * 100
   ), 2)
-
+acs_VA_CO$language <- round((((acs_VA_CO$tot_speak_spanishE + acs_VA_CO$tot_speak_other_languageE)/acs_VA_CO$tot_languageE)*100),2)
+  acs_VA_CO$per_poverty2 <- round((acs_VA_CO$pov_12month_incomeE/acs_VA_CO$tot_12month_incomeE)*100,2)
+  acs_VA_CO$per_Age17 <- round(((acs_VA_CO$tot_male_5E + acs_VA_CO$tot_male_9E + acs_VA_CO$tot_male_14E + acs_VA_CO$tot_male_17E + acs_VA_CO$tot_female_5E +acs_VA_CO$tot_female_9E +acs_VA_CO$tot_female_14E + acs_VA_CO$tot_female_17E)/acs_VA_CO$tot_popE)*100, 2)
+  acs_VA_CO$per_Age65 <- round(((acs_VA_CO$tot_male_65E +acs_VA_CO$tot_male_67E + acs_VA_CO$tot_male_70E +acs_VA_CO$tot_male_75E + acs_VA_CO$tot_male_80E +acs_VA_CO$tot_male_85E +
+                                   acs_VA_CO$tot_female_65E + acs_VA_CO$tot_female_67E + acs_VA_CO$tot_female_70E + acs_VA_CO$tot_female_75E + acs_VA_CO$tot_female_80E +acs_VA_CO$tot_female_85E)/acs_VA_CO$tot_popE)*100, 2)
+  acs_VA_CO$per_disability <- round ((acs_VA_CO$tot_disabilityE/acs_VA_CO$tot_dis_popE)*100,2)
+  acs_VA_CO$per_group_quarters <- round((acs_VA_CO$tot_group_quarters18E/acs_VA_CO$tot_group_quartersE)*100,2)
+  acs_VA_CO$per_sing_par <- round(((acs_VA_CO$tot_6_17_single_parentE + acs_VA_CO$tot_6_single_parentE)/acs_VA_CO$tot_single_parentE)*100,2)
 
 ```
 
@@ -318,7 +359,7 @@ loc_within_radius <- function(loc_data1, loc_data2, radius_1 = 24140.2){
 }
 
 # Run time depends on data filtering
-loc_data_output <- loc_within_radius(educationVA_data, healthVA_data, radius_1 = 64373.8)
+loc_data_output <- loc_within_radius(educationVA_data, healthVA_data)
 
 map$COUNTYFP <- as.numeric(map$COUNTYFP)
 
