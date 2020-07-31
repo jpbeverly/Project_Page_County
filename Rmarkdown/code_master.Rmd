@@ -32,10 +32,10 @@ library(tidycensus)
 
 ```{r ACS Data Pull}
 
-myACSkey <- ""
+myACSkey <- "2580514e97d888fe585f59b4e328fce92342fe8f"
 register_google(key = "AIzaSyBJD6VBw-QncBMQPrLv8yVE8gheQQc9TFc")
 # show available variables for ACS survey
-# acs5 <- load_variables(2010, "acs", cache=T)
+acs5 <- load_variables(2010, "acs", cache=T)
 
 # Candidate variable tables for describing poverty, educational attainment, race distribution, and housing type
 # B17020 
@@ -309,7 +309,7 @@ loc_within_radius <- function(loc_data1, loc_data2, radius_1 = 24140.2){
 }
 
 # Run time depends on data filtering
-loc_data_output <- loc_within_radius(educationVA_data, healthVA_data, radius_1 = 64373.8)
+loc_data_output <- loc_within_radius(educationVA_data, healthVA_data)
 
 map$COUNTYFP <- as.numeric(map$COUNTYFP)
 
@@ -402,7 +402,7 @@ page_outline <- get_acs(
 ) %>%
   select(COUNTYFP, geometry)
 
-va_basemap <- get_map(location=c(lon = -77.5, lat = 38.8), zoom=6, scale = "auto", source = 'stamen', maptype = "roadmap")
+va_basemap <- get_map(location=c(lon = -77.5, lat = 38.8), zoom=6, scale = "auto", source = 'stamen')
 ```
 
 
@@ -422,7 +422,7 @@ ggplot(CenterPopCounty_map) +
   #       axis.title.y=element_blank(),legend.position="right",
   #       panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
   #       panel.grid.minor=element_blank(),plot.background=element_blank()) +
-  ggtitle("Health Care Facility Access Index (15 Miles)")
+  ggtitle("Health Care Facility Access Index (40 Miles)")
     ```
 
 \clearpage
@@ -443,7 +443,7 @@ ggmap(va_basemap) +
         axis.title.y=element_blank(),legend.position="right",
         panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
         panel.grid.minor=element_blank(),plot.background=element_blank()) +
-  ggtitle("Educational Facility Access Index (20 Miles)") +
+  ggtitle("Educational Facility Access Index (15 Miles)") +
   ylim(-36.5,-39.5) + xlim(-84, -75) 
 ```
 
