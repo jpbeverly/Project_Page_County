@@ -26,16 +26,25 @@ library(rgeos)
 library(geosphere)
 library(pracma)
 library(tidycensus)
+library(acs)
 ```
 
 ## Pull ACS Data
 
 ```{r ACS Data Pull}
 
-myACSkey <- ""
-register_google(key = "AIzaSyBJD6VBw-QncBMQPrLv8yVE8gheQQc9TFc")
+myACSkey <- "9fb41fe9979018809a049069659efa1df8810000"
 # show available variables for ACS survey
-# acs5 <- load_variables(2010, "acs", cache=T)
+ acs5 <- load_variables(2010, "acs5", cache=T)
+ view(acs5)
+ acs5<-load_variables(2018, "acs5", cache=T)
+View(acs5)
+
+acs5_subject <- load_variables(2018, "acs5/subject", cache=T)
+View(acs5_subject)
+
+acs5_profile<- load_variables(2018, "acs5/profile", cache=T)
+View(acs5_profile)
 
 # Candidate variable tables for describing poverty, educational attainment, race distribution, and housing type
 # B17020 
