@@ -1,15 +1,19 @@
 setwd("C:/Users/Admin/Documents/DSPG/Page/Page_County_V2")
 
 library(dplyr)
-library(tidyverse)
 library(ggmap)
 library(leaflet)
 library(rgdal)
 library(sf)
 library(rgeos)
+library(stringr)
 library(geosphere)
 library(pracma)
 library(tidycensus)
+library(RColorBrewer)
+
+myACSkey <- ""
+register_google(key = "")
 
 `%notin%` <- Negate(`%in%`)
 
@@ -122,7 +126,7 @@ map$COUNTYFP <- as.numeric(map$COUNTYFP)
 CenterPopCounty_map <- inner_join(output, map, by="COUNTYFP")
 
 # Check for values that did not join
-anti_join(output, map, by="COUNTYFP")
+# anti_join(output, map, by="COUNTYFP")
 
 ggplot(CenterPopCounty_map) + 
   geom_sf(aes(fill= HEALTH_INVERSE_DIST_15mile, geometry=geometry)) +
@@ -154,5 +158,6 @@ ggplot(CenterPopCounty_map) +
                        na.value="grey") +
   ggtitle("Inverse Distance for Education Facilities within 15 Miles of County Center")
 # scale_fill_viridis_c() + scale_color_viridis_c()
+
 
 
