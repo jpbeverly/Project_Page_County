@@ -1,5 +1,9 @@
 #######################################################################
 # see page 89 secion 6.1 of ``Constructing_composite_indicators.pdf''
+#Other Resources 
+#Hartmann, K., Krois, J., Waske, B. (2018): E-Learning Project SOGA: Statistics and Geospatial Data Analysis. Department of Earth Sciences, Freie Universitaet Berlin.
+#
+#Johnson, R.A and Wichern, D.W, Applied Multivariate Statistical Analysis (6th ed). Pearson, 2007. Ch 9.
 #######################################################################
 
 ## The following code is from
@@ -46,12 +50,16 @@ data <- read_csv("data/VAcounty_data_master.csv")
   
 vul <- data[,c(9,10,156:160,162,167,170)]
 vul2 <- data[,c(9,10,155:164,166:167,170:171)]
+
+view(vul)
 #Standarsize variables
 vul_scale <- scale(vul)
 vul_scale2<- scale(vul2)
+
 #matrix form
 mymat <- data.matrix(vul_scale)
 mymat3 <- data.matrix(vul2)
+
 ## factor analysis with rotation type varimax
 ## the number of factors should be defined by some theoretical model/pre-assumptions
 vul.fa <- factanal(mymat, factors = 5, n.obs = 133, rotation = 'varimax', lower = 0.1)
@@ -63,12 +71,11 @@ cormat1 <- cor(mymat)
 covmat1 <- cov(mymat)
 
 #chronbach's Alpha (Group Predictors)
-pov <- data[, 155:171]
+#pov <- data[, 155:171]
 mymat2 <- data.matrix(vul)
-alpha(pov)
-omega(pov, check.keys = TRUE)
+omega(vul2, check.keys = TRUE)
 omega(vul,nfactors = 5,n.obs =133, check.keys = TRUE)
-alpha(mymat, check.keys = TRUE)
+
 
 #Check Residual Matrix
 round(cor(mymat) - (vul.fa$loadings %*% t(vul.fa$loadings) + diag(vul.fa$uniquenesses)), 3)
@@ -95,56 +102,7 @@ shp <- st_read("code/cb_2018_us_county_500k.shp")
 merged <- merge(Index, shp, by = "GEOID")
 Composite <- st_as_sf(merged)
 
-write.csv(Index, file = "Composite_Index.csv")
-
-# mypalette2 <- colorQuantile(palette="OrRd", Composite$Comp_index,n=9)
-# data2 <- read_csv("Composite_Index")
-# 
-# library(ggmap)
-# register_google(key = "9fb41fe9979018809a049069659efa1df8810000")
-# 
-# va_basemap <- get_map(location=c(lon = -77.5, lat = 38.8), zoom=6, scale = "auto", source = 'stamen')
-# 
-# ggmap(va_basemap) +
-#   geom_sf(data=Composite ,aes(fill= mypalette2(Comp_index), geometry=geometry), inherit.aes = FALSE) +
-#   geom_sf(data=va_sf, fill="transparent", color="black", size=.5, inherit.aes = FALSE) +
-#   geom_sf(data=page_outline, fill="transparent", color="orange", size=.75, inherit.aes = FALSE) +
-#   scale_fill_brewer(name = "Vulnerability Composite Index", palette = "OrRd", labels=c("High","","","","", "","","","Low")) +
-#   coord_sf(crs = st_crs(4326)) +
-#   theme(axis.line=element_blank(),axis.text.x=element_blank(),
-#         axis.text.y=element_blank(),axis.ticks=element_blank(),
-#         axis.title.x=element_blank(),
-#         axis.title.y=element_blank(),legend.position="right",
-#         panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
-#         panel.grid.minor=element_blank(),plot.background=element_blank()) +
-#   ggtitle("Vulnerability Index by County in Virginia") +
-#   ylim(-36.5,-39.5) + xlim(-84, -75) 
-# 
-# ggplot(Composite) + 
-#   geom_sf(data = Composite,aes(fill= mypalette2(Comp_index), geometry=geometry), inherit.aes = FALSE) +
-#   geom_sf(data=va_sf, fill="transparent", color="black", size=.5, inherit.aes = FALSE) +
-#   geom_sf(data=page_outline, fill="transparent", color="orange", size=.75, inherit.aes = FALSE) +
-#   scale_fill_brewer(name = "Vulnerability Composite Index", palette = "OrRd", labels=c("High","","","","", "","","","Low")) +
-#   coord_sf(crs = st_crs(4326)) +
-#   theme(axis.line=element_blank(),axis.text.x=element_blank(),
-#         axis.text.y=element_blank(),axis.ticks=element_blank(),
-#         axis.title.x=element_blank(),
-#         axis.title.y=element_blank(),legend.position="right",
-#         panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
-#         panel.grid.minor=element_blank(),plot.background=element_blank()) +
-#   ggtitle("Vulnerability Index by County in Virginia") +
-#   ylim(-36.5,-39.5) + xlim(-84, -75) 
-#Compute the fraction of the variable's total variance explained by the factor -> communality
-#var_exp <- apply(vul.fa$loadings^2,1,sum)
-#var_exp_mat <- data.matrix(var_exp)
-
-#Get the residual matrix
-#Lambda <- vul.fa$loadings
-#Psi <- diag(vul.fa$uniquenesses)
-#S <- vul.fa$correlation
-#Sigma <- Lambda %*% t(Lambda) + Psi
-
-#round(S-Sigma, 6)
+#write.csv(Index, file = "Composite_Index.csv")
 
 
 
