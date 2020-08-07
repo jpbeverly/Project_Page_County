@@ -34,7 +34,7 @@ library(acs)
 ```{r ACS Data Pull}
 
 
-myACSkey <- "9fb41fe9979018809a049069659efa1df8810000"
+myACSkey <- ""
 register_google(key = "")
 # show available variables for ACS survey
  acs5 <- load_variables(2010, "acs5", cache=T)

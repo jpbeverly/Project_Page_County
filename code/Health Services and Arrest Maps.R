@@ -32,7 +32,7 @@ ggplot(data = world) +
 
 
 #Drug Arrest Map variables
-arrests2 <- read_excel("cleaned_arrests.xlsx")
+arrests2 <- read_excel("code/cleaned_arrests.xlsx")
 merged_data <- merge(arrests2, shp, by = "GEOID")
 drug_arrests <- st_as_sf(merged_data)
 
