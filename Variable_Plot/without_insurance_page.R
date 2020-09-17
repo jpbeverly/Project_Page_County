@@ -1,5 +1,5 @@
 
-setwd("E:/Grad/intern/DSPG/Projects/Page_County/Variable_Plot/")
+#setwd("E:/Grad/intern/DSPG/Projects/Page_County/Variable_Plot/")
 library(tidyverse)
 library(tidycensus)
 library(sf)
@@ -71,8 +71,8 @@ ggplot(page_data, aes(x=COUNAME, y=round(tot_insurance_75yrs_and_up_without_E*10
 ggplot(page_data, aes(x=COUNAME, y=round(tot_insurance_19to25yrs_without_E*100/POPULATION, 2), fill=COUNAME)) + 
   geom_bar(stat="identity") +
   xlab("County Name")+
-  ylab("% Without Insurance between 19 to 25 years")+
-  theme_minimal()
+  ylab("Percent")+
+  theme_minimal()+ggtitle("% Without Insurance 19-25 years") + labs(fill = "County")
 
 
 # Without Insurance between 26 to 34 years
@@ -90,4 +90,4 @@ ggplot(page_data, aes(x=COUNAME, y=tot_vehicle_without_E, fill=COUNAME)) +
   geom_bar(stat="identity") +
   xlab("County Name")+
   ylab("Total Without Vehicle")+
-  theme_minimal()
+  theme_minimal()+ggtitle("Population Without Vehicle") + labs(fill = "County")
